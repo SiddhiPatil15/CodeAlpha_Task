@@ -1,2 +1,242 @@
 # CodeAlpha_Task1
 First task-Basic calculator
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Basic Calculator</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet" />
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+    body {
+      margin: 0;
+      background: #121212;
+      color: #e0e0e0;
+      font-family: 'Inter', sans-serif;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+    }
+    .calculator {
+      background: #1e1e1e;
+      border-radius: 12px;
+      overflow: hidden;
+      width: 320px;
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.8);
+    }
+    .display {
+      background: #262626;
+      padding: 24px 32px;
+      font-size: 2rem;
+      font-weight: 700;
+      text-align: right;
+      height: 80px;
+      position: relative;
+    }
+    .display .expression {
+      color: #9e9e9e;
+      font-weight: 400;
+      font-size: 1.2rem;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .display .result {
+      font-size: 1.5rem;
+    }
+    .buttons {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 8px;
+      padding: 16px;
+    }
+    button {
+      background: #333;
+      border: none;
+      color: #fff;
+      font-size: 1.5rem;
+      padding: 20px 0;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+    button:hover {
+      background: #444;
+    }
+    .btn-clear {
+      background-color: #b71c1c;
+      color: #fff;
+    }
+    .btn-clear:hover {
+      background-color: #7f0000;
+      box-shadow: 0 4px 12px rgba(183, 28, 28, 0.8);
+    }
+    .btn-equal {
+      background: #2e7d32;
+      color: #a5d6a7;
+      grid-column: span 2;
+      font-weight: 700;
+    }
+    .btn-equal:hover {
+      background-color: #1b5e20;
+      box-shadow: 0 4px 16px rgba(46, 125, 50, 0.8);
+    }
+    .material-icons.md-24 {
+      font-size: 24px;
+      pointer-events: none;
+    }
+    button[data-value="0"] {
+      grid-column: span 2;
+    }
+    @media (max-width: 400px) {
+      .calculator {
+        width: 100%;
+        border-radius: 0;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="calculator" role="application" aria-label="Basic calculator">
+    <div class="display" aria-live="polite" aria-atomic="true">
+      <div class="expression" id="expression" aria-label="Current expression"></div>
+      <div class="result" id="result" aria-label="Current result"></div>
+    </div>
+    <div class="buttons" role="group" aria-label="Calculator buttons">
+      <button type="button" class="btn-clear" id="clear" aria-label="Clear all">C</button>
+      <button type="button" id="backspace" aria-label="Backspace">
+        <span class="material-icons md-24" aria-hidden="true">backspace</span>
+      </button>
+      <button type="button" class="btn-operator" data-value="/" aria-label="Divide">÷</button>
+      <button type="button" class="btn-operator" data-value="*" aria-label="Multiply">×</button>
+      <button type="button" data-value="7" aria-label="7">7</button>
+      <button type="button" data-value="8" aria-label="8">8</button>
+      <button type="button" data-value="9" aria-label="9">9</button>
+      <button type="button" class="btn-operator" data-value="-" aria-label="Minus">−</button>
+      <button type="button" data-value="4" aria-label="4">4</button>
+      <button type="button" data-value="5" aria-label="5">5</button>
+      <button type="button" data-value="6" aria-label="6">6</button>
+      <button type="button" class="btn-operator" data-value="+" aria-label="Plus">+</button>
+      <button type="button" data-value="1" aria-label="1">1</button>
+      <button type="button" data-value="2" aria-label="2">2</button>
+      <button type="button" data-value="3" aria-label="3">3</button>
+      <button type="button" class="btn-equal" id="equals" aria-label="Equals">=</button>
+      <button type="button" data-value="0" aria-label="0">0</button>
+      <button type="button" data-value="." aria-label="Decimal point">.</button>
+    </div>
+  </div>
+
+  <!-- JavaScript (same as your original) -->
+  <script>
+    (() => {
+      'use strict';
+      const expressionDisplay = document.getElementById('expression');
+      const resultDisplay = document.getElementById('result');
+      const buttons = document.querySelectorAll('.buttons button');
+      const clearBtn = document.getElementById('clear');
+      const backspaceBtn = document.getElementById('backspace');
+      const equalsBtn = document.getElementById('equals');
+      let expression = '';
+      function updateDisplay() {
+        expressionDisplay.textContent = expression || '0';
+        try {
+          if (expression && /[0-9)]$/.test(expression)) {
+            let evalResult = Function('"use strict";return (' + expression + ')')();
+            if (evalResult === Infinity || evalResult === -Infinity) {
+              resultDisplay.textContent = 'Cannot divide by zero';
+            } else if (typeof evalResult === 'number' && !Number.isNaN(evalResult)) {
+              resultDisplay.textContent = evalResult.toFixed(6).replace(/\.?0+$/, '');
+            } else {
+              resultDisplay.textContent = '';
+            }
+          } else {
+            resultDisplay.textContent = '';
+          }
+        } catch {
+          resultDisplay.textContent = 'Error';
+        }
+      }
+      function appendValue(value) {
+        if (/[\+\-\*\/]/.test(value)) {
+          if (expression === '') {
+            if (value === '-') {
+              expression += value;
+            }
+            return;
+          }
+          if (/[\+\-\*\/]$/.test(expression)) {
+            expression = expression.slice(0, -1) + value;
+            return;
+          }
+        }
+        if (value === '.') {
+          const parts = expression.split(/[\+\-\*\/]/);
+          const last = parts[parts.length - 1];
+          if (last.includes('.')) return;
+          if (last === '') expression += '0';
+        }
+        expression += value;
+      }
+      function clearAll() {
+        expression = '';
+        resultDisplay.textContent = '';
+      }
+      function backspace() {
+        expression = expression.slice(0, -1);
+      }
+      buttons.forEach(button => {
+        button.addEventListener('click', () => {
+          if (button === clearBtn) {
+            clearAll();
+          } else if (button === backspaceBtn) {
+            backspace();
+          } else if (button === equalsBtn) {
+            try {
+              const evalResult = Function('"use strict";return (' + expression + ')')();
+              if (evalResult === Infinity || evalResult === -Infinity) {
+                resultDisplay.textContent = 'Cannot divide by zero';
+              } else if (typeof evalResult === 'number' && !Number.isNaN(evalResult)) {
+                expression = evalResult.toString();
+                resultDisplay.textContent = '';
+              } else {
+                resultDisplay.textContent = '';
+              }
+            } catch {
+              resultDisplay.textContent = 'Error';
+            }
+          } else {
+            appendValue(button.getAttribute('data-value'));
+          }
+          updateDisplay();
+        });
+      });
+      window.addEventListener('keydown', (e) => {
+        if (e.repeat) return;
+        const allowedKeys = '0123456789+-/*.';
+        if (allowedKeys.includes(e.key)) {
+          appendValue(e.key);
+          updateDisplay();
+          e.preventDefault();
+        } else if (e.key === 'Enter' || e.key === '=') {
+          e.preventDefault();
+          equalsBtn.click();
+        } else if (e.key === 'Backspace') {
+          e.preventDefault();
+          backspace();
+          updateDisplay();
+        } else if (e.key === 'Escape') {
+          e.preventDefault();
+          clearAll();
+          updateDisplay();
+        }
+      });
+      updateDisplay();
+    })();
+  </script>
+</body>
+</html>
